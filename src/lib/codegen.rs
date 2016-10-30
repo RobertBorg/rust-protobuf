@@ -1564,6 +1564,22 @@ impl<'a> MessageGen<'a> {
         }
     }
 
+    fn write_oneof_enum_accessors(&self, w: &mut CodeWriter) {
+        for oneof in self.oneofs() {
+            w.write_line("");
+            let fn_def = format!("get_{}(&self) -> &{}",  oneof.name(), &oneof.full_storage_type().to_string());
+            w.pub_fn(fn_def, |w| {
+                w.write_line(format!("&self.{}", oneof.name()));
+            });
+
+            w.write_line("");
+            let fn_def = format!("take_{}(self) -> {}",  oneof.name(), &oneof.full_storage_type().to_string());
+            w.pub_fn(fn_def, |w| {
+                w.write_line(format!("self.{}", oneof.name()));
+            });
+        }
+    }
+
     fn write_impl_self(&self, w: &mut CodeWriter) {
         w.impl_self_block(&self.type_name, |w| {
             w.pub_fn(format!("new() -> {}", self.type_name), |w| {
@@ -1573,6 +1589,7 @@ impl<'a> MessageGen<'a> {
             w.write_line("");
             self.write_default_instance(w);
             self.write_field_accessors(w);
+            self.write_oneof_enum_accessors(w);
         });
     }
 
